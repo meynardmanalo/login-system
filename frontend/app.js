@@ -1,4 +1,4 @@
-const API_URL = "http://localhost:5000"; // Replace with Render URL in production
+const API_URL = "https://my-login-api-yty9.onrender.com";
 
 const loginForm = document.getElementById("loginForm");
 const registerForm = document.getElementById("registerForm");
