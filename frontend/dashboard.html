@@ -3,15 +3,90 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Landing Dashboard</title>
+  <title>Pollen Flowers</title>
   <link rel="stylesheet" href="style.css">
 </head>
-<body>
-  <main class="card">
-    <h1>Dashboard</h1>
-    <p id="welcome">Loading user profile...</p>
-    <button id="logout">Logout</button>
-  </main>
+<body class="dashboard-page">
+  <header class="topbar">
+    <a class="brand" href="#home">Pollen<span>Flowers</span></a>
+    <nav class="top-nav">
+      <ul>
+        <li><a href="#home">Home</a></li>
+        <li><a href="#about">About Us</a></li>
+        <li><a href="#profiles">Profiles</a></li>
+      </ul>
+    </nav>
+    <button id="logout" class="top-logout" type="button">Logout</button>
+  </header>
+
+  <div class="dashboard-layout">
+    <aside class="sidebar">
+      <h2>Your account</h2>
+      <p class="sidebar-copy">Manage your account and explore our flower collection.</p>
+      <div class="sidebar-details">
+        <div>
+          <span>Account</span>
+          <strong>Active</strong>
+        </div>
+        <div>
+          <span>Type</span>
+          <strong>Member</strong>
+        </div>
+      </div>
+      <div class="sidebar-note">Pollen Flowers, simply made.</div>
+    </aside>
+
+    <div class="dashboard-content">
+    <main>
+      <section id="home" class="dashboard-section hero-section">
+        <h1 id="home-title">Welcome to<br><em>Pollen Flowers.</em></h1>
+        <p id="welcome">Loading user profile...</p>
+        <a class="section-link" href="#about">About Pollen Flowers</a>
+      </section>
+
+      <section id="about" class="dashboard-section about-section">
+        <div class="section-heading">
+          <h2 id="about-title">About<br><em>our flowers.</em></h2>
+        </div>
+        <div class="about-copy">
+          <p>Pollen Flowers is a simple place to discover flowers, view profiles, and find something that feels right for you.</p>
+          <a class="text-link" href="#profiles">View our flowers</a>
+        </div>
+      </section>
+
+      <section id="profiles" class="dashboard-section profiles-section">
+        <h2 id="profiles-title">Our<br><em>flowers.</em></h2>
+        <div class="profile-grid">
+          <a class="profile-card" href="flowerheads/bayoneto.html">
+            <img src="flowerheads-icons/flowerhead1.png" alt="Bayoneto flower">
+            <span class="profile-card-name">Bayoneto</span>
+          </a>
+          <a class="profile-card" href="flowerheads/ipapo.html">
+            <img src="flowerheads-icons/flowerhead2.png" alt="Ipapo flower">
+            <span class="profile-card-name">Ipapo</span>
+          </a>
+          <a class="profile-card" href="flowerheads/manalo.html">
+            <img src="flowerheads-icons/flowerhead3.png" alt="Manalo flower">
+            <span class="profile-card-name">Manalo</span>
+          </a>
+          <a class="profile-card" href="flowerheads/pedrera.html">
+            <img src="flowerheads-icons/flowerhead4.png" alt="Pedrera flower">
+            <span class="profile-card-name">Pedrera</span>
+          </a>
+          <a class="profile-card" href="flowerheads/sister.html">
+            <img src="flowerheads-icons/flowerhead5.png" alt="Sister flower">
+            <span class="profile-card-name">Sister</span>
+          </a>
+        </div>
+      </section>
+    </main>
+
+    <footer class="dashboard-footer">
+      <span>&copy; PollenFlowers 2026</span>
+      <a href="#home">Back to top</a>
+    </footer>
+  </div>
+
   <script>
     const API_URL = "https://my-login-api-yty9.onrender.com"; // Replace with Render URL in production
     const token = localStorage.getItem("token");
@@ -31,7 +106,7 @@
     })
     .then(data => {
       document.getElementById("welcome").textContent =
-        `Welcome, ${data.user.name} (${data.user.email})`;
+        `Welcome to Pollen Flowers, ${data.user.name}.`;
     })
     .catch(() => {
       localStorage.removeItem("token");
