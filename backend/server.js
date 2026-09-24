@@ -170,14 +170,22 @@ app.delete("/api/reservations/:id", async (req, res) => {
 // --- SERVER START & DB CONNECTION ---
 const PORT = process.env.PORT || 5000;
 
-app.listen(PORT, () => {
-  console.log(`Server running on port ${PORT}`);
-});
+async function startServer() {
+  if (!process.env.MONGODB_URI) {
+    console.error("MONGODB_URI is missing in environment variables.");
+    process.exit(1);
+  }
 
-if (process.env.MONGODB_URI) {
-  mongoose.connect(process.env.MONGODB_URI)
-    .then(() => console.log("MongoDB connected successfully."))
-    .catch((err) => console.error("MongoDB Connection Failed:", err.message));
-} else {
-  console.error("MONGODB_URI is missing in environment variables.");
+  try {
+    await mongoose.connect(process.env.MONGODB_URI);
+    console.log("MongoDB connected successfully.");
+    app.listen(PORT, () => {
+      console.log(`Server running on port ${PORT}`);
+    });
+  } catch (err) {
+    console.error("MongoDB Connection Failed:", err.message);
+    process.exit(1);
+  }
 }
+
+startServer();
