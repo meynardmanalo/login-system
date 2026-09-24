@@ -3,34 +3,44 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Login & Register</title>
+  <title>Bellissima Lounge | Sign in</title>
   <link rel="stylesheet" href="style.css">
 </head>
 <body>
-  <main class="card">
-    <h1 style="color: gold;">Welcome Back</h1>
-    <p class="subtitle">Sign in to your account</p>
+  <main class="auth-shell">
+    <section class="auth-intro">
+      <p class="eyebrow">Bellissima Lounge</p>
+      <h1>Good nights,<br><em>well managed.</em></h1>
+      <p class="intro-copy">A simple workspace for the lounge team, with inventory at the center of every service.</p>
+      <p class="intro-note">Reservations, stock, and service in one quiet place.</p>
+    </section>
+    <section class="card">
+      <p class="eyebrow">Team access</p>
+      <h2 id="authTitle">Welcome back</h2>
+      <p class="subtitle" id="authSubtitle">Sign in to your Bellissima workspace.</p>
     <form id="loginForm">
-      <label>Email</label>
+      <label for="email">Email</label>
       <input type="email" id="email" required>
-      <label>Password</label>
+      <label for="password">Password</label>
       <input type="password" id="password" required>
-      <button type="submit">Login</button>
+      <button type="submit">Sign in</button>
       <p id="message"></p>
     </form>
-    <p>Don't have an account? <a href="#" id="showRegister">Register</a></p>
+    <p class="switch-copy">New client? <a href="#" id="showRegister">Create a client account</a></p>
     
     <form id="registerForm" class="hidden">
-      <h2>Create Account</h2>
-      <label>Name</label>
+      <h2>Create client account</h2>
+      <label for="name">Name</label>
       <input type="text" id="name" required>
-      <label>Email</label>
+      <label for="regEmail">Email</label>
       <input type="email" id="regEmail" required>
-      <label>Password</label>
+      <label for="regPassword">Password</label>
       <input type="password" id="regPassword" required>
-      <button type="submit">Register</button>
+      <button type="submit">Create account</button>
       <p id="registerMessage"></p>
     </form>
+    <p class="admin-note">Admin access is issued by Bellissima Lounge and cannot be self-registered.</p>
+    </section>
   </main>
   <script src="app.js"></script>
 </body>

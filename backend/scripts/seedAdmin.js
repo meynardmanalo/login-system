@@ -11,6 +11,7 @@ const userSchema = new mongoose.Schema({
   name: { type: String, required: true },
   email: { type: String, required: true, unique: true, lowercase: true },
   password: { type: String, required: true },
+  role: { type: String, enum: ["admin", "client"], default: "client" },
   status: { type: String, enum: ["active", "suspended"], default: "active" }
 }, { timestamps: { createdAt: "createdAt", updatedAt: false } });
 
@@ -43,6 +44,11 @@ async function run() {
   
   const existing = await User.findOne({ email: ADMIN_EMAIL.toLowerCase() });
   if (existing) {
+    if (existing.role !== "admin") {
+      existing.role = "admin";
+      await existing.save();
+      console.log("Updated the existing account role to Admin.");
+    }
     console.log(`A user with email ${ADMIN_EMAIL} already exists (id: ${existing._id}). No changes made.`);
     await mongoose.disconnect();
     return;
@@ -53,6 +59,7 @@ async function run() {
     name: ADMIN_NAME,
     email: ADMIN_EMAIL.toLowerCase(),
     password: hashedPassword,
+    role: "admin",
     status: "active"
   });
 

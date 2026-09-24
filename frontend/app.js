@@ -1,4 +1,4 @@
-const API_URL = "https://my-login-api-yty9.onrender.com";
+const API_URL = "http://localhost:5000";
 
 const loginForm = document.getElementById("loginForm");
 const registerForm = document.getElementById("registerForm");
@@ -7,6 +7,9 @@ const showRegister = document.getElementById("showRegister");
 showRegister.addEventListener("click", (e) => {
   e.preventDefault();
   registerForm.classList.toggle("hidden");
+  const registering = !registerForm.classList.contains("hidden");
+  document.getElementById("authTitle").textContent = registering ? "Create client account" : "Welcome back";
+  document.getElementById("authSubtitle").textContent = registering ? "For clients booking Bellissima services." : "Sign in to your Bellissima workspace.";
 });
 
 loginForm.addEventListener("submit", async (e) => {
