@@ -43,7 +43,7 @@
   </main>
 
   <script>
-    const API_URL = "http://localhost:5000";
+    const API_URL = "https://my-login-api-yty9.onrender.com";
     const token = localStorage.getItem("token");
     if (!token) window.location.href = "index.html";
     const request = (path, options = {}) => fetch(`${API_URL}${path}`, { ...options, headers: { "Content-Type": "application/json", Authorization: `Bearer ${token}`, ...(options.headers || {}) } });
