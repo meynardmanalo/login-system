@@ -12,6 +12,7 @@ app.use(express.json());
 
 // --- SCHEMAS ---
 const ReservationSchema = new mongoose.Schema({
+  clientId: { type: mongoose.Schema.Types.ObjectId, ref: "User", required: true },
   clientName: { type: String, required: true },
   contactNumber: { type: String, required: true },
   service: { type: String, required: true },
@@ -139,18 +140,21 @@ app.delete("/api/inventory/:id", requireAuth, requireAdmin, async (req, res) => 
   }
 });
 
-app.get("/api/reservations", async (req, res) => {
+app.get("/api/reservations", requireAuth, async (req, res) => {
   try {
-    const reservations = await Reservation.find();
+    const query = req.auth.role === "admin" ? {} : { clientId: req.auth.id };
+    const reservations = await Reservation.find(query).sort({ appointmentDate: 1 });
     res.json(reservations);
   } catch (err) {
     res.status(500).json({ error: err.message });
   }
 });
 
-app.post("/api/reservations", async (req, res) => {
+app.post("/api/reservations", requireAuth, async (req, res) => {
   try {
-    const newReservation = new Reservation(req.body);
+    const user = await User.findById(req.auth.id).select("name");
+    if (!user) return res.status(404).json({ error: "User not found." });
+    const newReservation = new Reservation({ ...req.body, clientId: user._id, clientName: user.name });
     const saved = await newReservation.save();
     res.status(201).json(saved);
   } catch (err) {
@@ -158,7 +162,7 @@ app.post("/api/reservations", async (req, res) => {
   }
 });
 
-app.delete("/api/reservations/:id", async (req, res) => {
+app.delete("/api/reservations/:id", requireAuth, requireAdmin, async (req, res) => {
   try {
     await Reservation.findByIdAndDelete(req.params.id);
     res.json({ message: "Deleted successfully" });

@@ -9,11 +9,12 @@
 <body class="dashboard-page">
   <header class="app-header">
     <a class="brand" href="dashboard.html">Bellissima <span>Lounge</span></a>
-    <nav class="app-nav" aria-label="Main navigation"><a class="active" href="#inventory">Inventory</a><a href="#overview">Overview</a></nav>
+    <nav class="app-nav" aria-label="Main navigation"><a class="active" href="#overview">Workspace</a><a id="inventoryNav" href="#inventory">Inventory</a></nav>
     <div class="header-account"><span id="accountName">Loading...</span><button id="logout" class="button button-quiet" type="button">Sign out</button></div>
   </header>
 
   <main class="workspace">
+    <div id="adminView">
     <section id="overview" class="page-heading">
       <div><p class="eyebrow">Operations / Inventory</p><h1>Keep the room ready.</h1><p class="page-copy">Track the essentials behind every Bellissima service.</p></div>
       <p class="date-note" id="today"></p>
@@ -40,6 +41,31 @@
       <div class="table-wrap"><table><thead><tr><th>Item</th><th>Category</th><th>Quantity</th><th>Reorder level</th><th>Status</th></tr></thead><tbody id="inventoryRows"><tr><td colspan="5" class="empty-state">Loading inventory...</td></tr></tbody></table></div>
       <p id="pageMessage" class="page-message"></p>
     </section>
+    </div>
+    <section id="clientView" class="client-view hidden">
+      <section class="page-heading client-heading">
+        <div><p class="eyebrow">Bellissima / Book a service</p><h1>Make time for yourself.</h1><p class="page-copy">Choose a service and request the appointment that suits you.</p></div>
+        <p class="date-note" id="clientToday"></p>
+      </section>
+      <section class="service-section" aria-labelledby="serviceTitle">
+        <div class="section-toolbar"><div><p class="eyebrow">The menu</p><h2 id="serviceTitle">Choose your service</h2></div></div>
+        <div id="serviceOptions" class="service-grid"></div>
+      </section>
+      <section class="booking-section" aria-labelledby="bookingTitle">
+        <div class="section-toolbar"><div><p class="eyebrow">Your visit</p><h2 id="bookingTitle">Request an appointment</h2></div></div>
+        <form id="bookingForm" class="booking-form">
+          <label>Service<select id="bookingService" required></select></label>
+          <label>Contact number<input id="contactNumber" type="tel" required placeholder="09xx xxx xxxx"></label>
+          <label>Preferred date and time<input id="appointmentDate" type="datetime-local" required></label>
+          <button class="button button-primary" type="submit">Request booking</button>
+          <p id="bookingMessage" class="form-message"></p>
+        </form>
+      </section>
+      <section class="booking-section reservations-section" aria-labelledby="reservationsTitle">
+        <div class="section-toolbar"><div><p class="eyebrow">Your requests</p><h2 id="reservationsTitle">Upcoming appointments</h2></div></div>
+        <div id="clientReservations" class="reservation-list"><p class="empty-state">Loading your appointments...</p></div>
+      </section>
+    </section>
   </main>
 
   <script>
@@ -47,6 +73,25 @@
     const token = localStorage.getItem("token");
     if (!token) window.location.href = "index.html";
     const request = (path, options = {}) => fetch(`${API_URL}${path}`, { ...options, headers: { "Content-Type": "application/json", Authorization: `Bearer ${token}`, ...(options.headers || {}) } });
+    const services = [
+      { name: "Signature styling", detail: "A polished look designed around your evening.", duration: "60 min" },
+      { name: "Soft glam makeup", detail: "Fresh, camera-ready makeup with a soft finish.", duration: "75 min" },
+      { name: "Lounge beauty session", detail: "A considered beauty reset from start to finish.", duration: "90 min" }
+    ];
+    const serviceOptions = document.getElementById("serviceOptions");
+    const bookingService = document.getElementById("bookingService");
+    services.forEach(service => {
+      const option = document.createElement("option");
+      option.value = service.name;
+      option.textContent = service.name;
+      bookingService.appendChild(option);
+      const card = document.createElement("button");
+      card.type = "button";
+      card.className = "service-card";
+      card.innerHTML = `<span class="service-number">0${services.indexOf(service) + 1}</span><strong>${service.name}</strong><span>${service.detail}</span><small>${service.duration}</small>`;
+      card.addEventListener("click", () => { bookingService.value = service.name; document.querySelectorAll(".service-card").forEach(item => item.classList.remove("selected")); card.classList.add("selected"); document.getElementById("bookingTitle").scrollIntoView({ behavior: "smooth", block: "center" }); });
+      serviceOptions.appendChild(card);
+    });
     function renderInventory(items) {
       document.getElementById("totalItems").textContent = items.length;
       document.getElementById("lowItems").textContent = items.filter(item => item.quantity <= item.reorderLevel).length;
@@ -55,13 +100,27 @@
       if (!items.length) { rows.innerHTML = '<tr><td colspan="5" class="empty-state">No inventory has been added yet.</td></tr>'; return; }
       rows.innerHTML = items.map(item => { const low = item.quantity <= item.reorderLevel; return `<tr><td><strong>${item.name}</strong><small>${item.unit}</small></td><td>${item.category}</td><td>${item.quantity} ${item.unit}</td><td>${item.reorderLevel} ${item.unit}</td><td><span class="status ${low ? "status-low" : "status-good"}">${low ? "Reorder soon" : "In stock"}</span></td></tr>`; }).join("");
     }
-    async function loadPage() {
+    function renderReservations(reservations) {
+      const target = document.getElementById("clientReservations");
+      if (!reservations.length) { target.innerHTML = '<p class="empty-state">No appointments yet. Your next good evening starts here.</p>'; return; }
+      target.innerHTML = reservations.map(reservation => `<article class="reservation-item"><div><strong>${reservation.service}</strong><span>${reservation.appointmentDate}</span></div><span class="status status-pending">${reservation.status}</span></article>`).join("");
+    }
+    async function loadClientPage(profile) {
+      document.getElementById("adminView").classList.add("hidden");
+      document.getElementById("clientView").classList.remove("hidden");
+      document.getElementById("inventoryNav").classList.add("hidden");
+      document.getElementById("accountName").textContent = profile.user.name;
+      document.getElementById("clientToday").textContent = new Intl.DateTimeFormat("en", { weekday: "long", month: "long", day: "numeric" }).format(new Date());
+      const response = await request("/api/reservations");
+      if (!response.ok) throw new Error("Could not load appointments.");
+      const reservations = await response.json();
+      renderReservations(reservations.filter(item => item.clientName === profile.user.name));
+    }
+    async function loadAdminPage(profile) {
+      document.getElementById("accountName").textContent = `${profile.user.name} / ${profile.user.role}`;
+      if (profile.user.role !== "admin") { await loadClientPage(profile); return; }
+      document.getElementById("showForm").classList.remove("hidden");
       try {
-        const profileResponse = await request("/api/profile");
-        if (!profileResponse.ok) throw new Error("Session expired.");
-        const profile = await profileResponse.json();
-        document.getElementById("accountName").textContent = `${profile.user.name} / ${profile.user.role}`;
-        if (profile.user.role !== "admin") document.getElementById("showForm").classList.add("hidden");
         const inventoryResponse = await request("/api/inventory");
         if (!inventoryResponse.ok) throw new Error("Could not load inventory.");
         renderInventory(await inventoryResponse.json());
@@ -80,6 +139,23 @@
       document.getElementById("inventoryForm").reset(); document.getElementById("inventoryForm").classList.add("hidden");
       const refreshed = await request("/api/inventory"); renderInventory(await refreshed.json());
     });
+    document.getElementById("bookingForm").addEventListener("submit", async event => {
+      event.preventDefault();
+      const message = document.getElementById("bookingMessage");
+      const profileResponse = await request("/api/profile");
+      const profile = await profileResponse.json();
+      const response = await request("/api/reservations", { method: "POST", body: JSON.stringify({ clientName: profile.user.name, contactNumber: document.getElementById("contactNumber").value, service: bookingService.value, appointmentDate: document.getElementById("appointmentDate").value }) });
+      const data = await response.json();
+      message.textContent = response.ok ? "Your request has been sent to Bellissima Lounge." : (data.error || "Unable to request this appointment.");
+      if (response.ok) { document.getElementById("bookingForm").reset(); loadClientPage(profile); }
+    });
+    async function loadPage() {
+      try {
+        const profileResponse = await request("/api/profile");
+        if (!profileResponse.ok) throw new Error("Session expired.");
+        await loadAdminPage(await profileResponse.json());
+      } catch (error) { localStorage.removeItem("token"); window.location.href = "index.html"; }
+    }
     loadPage();
   </script>
 </body>
